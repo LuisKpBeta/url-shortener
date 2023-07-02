@@ -8,20 +8,18 @@ import (
 
 func CreateUrl(db *sql.DB) func(*entity.Url) error {
 	return func(url *entity.Url) error {
-		stmt, err := db.Prepare("INSERT INTO urls (original, shortened, created_at) values(?,?,?)")
+		// stmt, err := db.Prepare("INSERT INTO url (original, shortened, createdat) VALUES (? , ? , ?)")
+		stmt, err := db.Prepare("INSERT INTO url (original, shortened, createdat) VALUES ($1, $2, $3) RETURNING id")
 		checkErr(err)
-		result, err := stmt.Exec(url.Original, url.Shortened, url.CreatedAt)
-		if err != nil {
-			return err
-		}
-		createdId, err := result.LastInsertId()
-		checkErr(err)
+		defer stmt.Close()
+		var createdId int
+		stmt.QueryRow(url.Original, url.Shortened, url.CreatedAt).Scan(createdId)
 		url.Id = int(createdId)
 		return nil
 	}
 }
 func checkErr(err error) {
 	if err != nil {
-		panic(err.Error())
+		panic(err)
 	}
 }
