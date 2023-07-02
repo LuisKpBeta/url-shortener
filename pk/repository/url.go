@@ -8,7 +8,6 @@ import (
 
 func CreateUrl(db *sql.DB) func(*entity.Url) error {
 	return func(url *entity.Url) error {
-		// stmt, err := db.Prepare("INSERT INTO url (original, shortened, createdat) VALUES (? , ? , ?)")
 		stmt, err := db.Prepare("INSERT INTO url (original, shortened, createdat) VALUES ($1, $2, $3) RETURNING id")
 		checkErr(err)
 		defer stmt.Close()
