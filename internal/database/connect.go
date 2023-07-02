@@ -10,7 +10,7 @@ import (
 const (
 	HOST          = "localhost"
 	DATABASE      = "url"
-	USER          = "psotgres"
+	USER          = "postgres"
 	PASSWORD      = "postgres"
 	MAX_OPEN_CONN = 10
 	MAX_IDLE_CONN = 10
@@ -23,7 +23,7 @@ func checkError(err error) {
 }
 
 func ConnectToDatabase() *sql.DB {
-	var connectionString string = fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=require", HOST, USER, PASSWORD, DATABASE)
+	var connectionString string = fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable", HOST, USER, PASSWORD, DATABASE)
 	db, err := sql.Open("postgres", connectionString)
 	checkError(err)
 
