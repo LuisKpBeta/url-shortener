@@ -2,6 +2,8 @@ package api
 
 import (
 	"log"
+	"net/http"
+	"strings"
 
 	"github.com/LuisKpBeta/url-shortener/pk/entity"
 	"github.com/gin-gonic/gin"
@@ -21,10 +23,9 @@ func StartHttpServer(server *gin.Engine) {
 func CreateUrlShortnerHandler(server *gin.Engine, handler func(string) (*entity.Url, error)) {
 	server.POST("/", func(c *gin.Context) {
 		parameters := CreateUrlSHortenerParams{}
-		c.Bind(&parameters)
 		err := c.Bind(&parameters)
 		if err != nil {
-			c.JSON(401, gin.H{
+			c.JSON(400, gin.H{
 				"error": err.Error(),
 			})
 			return
@@ -38,5 +39,22 @@ func CreateUrlShortnerHandler(server *gin.Engine, handler func(string) (*entity.
 			return
 		}
 		c.JSON(200, entity)
+	})
+}
+func GetUrlByTokenHandler(server *gin.Engine, handler func(token string) (string, error)) {
+	server.GET("/:token", func(c *gin.Context) {
+		token := c.Param("token")
+		originalUrl, err := handler(token)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		if !strings.HasPrefix(originalUrl, "http://") && !strings.HasPrefix(originalUrl, "https://") {
+			originalUrl = "http://" + originalUrl
+		}
+
+		c.Redirect(http.StatusMovedPermanently, originalUrl)
 	})
 }
