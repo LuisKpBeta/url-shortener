@@ -12,7 +12,7 @@ func CreateUrl(db *sql.DB) func(*entity.Url) error {
 		checkErr(err)
 		defer stmt.Close()
 		var createdId int
-		stmt.QueryRow(url.Original, url.Shortened, url.CreatedAt).Scan(createdId)
+		stmt.QueryRow(url.Original, url.Shortened, url.CreatedAt).Scan(&createdId)
 		url.Id = int(createdId)
 		return nil
 	}
