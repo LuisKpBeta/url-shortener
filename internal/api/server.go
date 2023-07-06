@@ -5,8 +5,10 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/LuisKpBeta/url-shortener/internal/prometheus"
 	"github.com/LuisKpBeta/url-shortener/pk/entity"
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type CreateUrlSHortenerParams struct {
@@ -18,6 +20,7 @@ func CreateHttpServer() *gin.Engine {
 	return r
 }
 func StartHttpServer(server *gin.Engine) {
+	server.Use(gin.Logger())
 	server.Run(":8080")
 }
 func CreateUrlShortnerHandler(server *gin.Engine, handler func(string) (*entity.Url, error)) {
@@ -25,6 +28,7 @@ func CreateUrlShortnerHandler(server *gin.Engine, handler func(string) (*entity.
 		parameters := CreateUrlSHortenerParams{}
 		err := c.Bind(&parameters)
 		if err != nil {
+			log.Println("[ERROR] on create shortener:" + err.Error())
 			c.JSON(400, gin.H{
 				"error": err.Error(),
 			})
@@ -56,5 +60,21 @@ func GetUrlByTokenHandler(server *gin.Engine, handler func(token string) (string
 		}
 
 		c.Redirect(http.StatusMovedPermanently, originalUrl)
+	})
+}
+func CreatePrometheusHandler(server *gin.Engine) {
+	h := promhttp.Handler()
+	server.GET("/metrics", func(c *gin.Context) {
+		h.ServeHTTP(c.Writer, c.Request)
+	})
+
+}
+func CreateMetricsMiddleware(server *gin.Engine, s *prometheus.PrometheusService) {
+	server.Use(func(c *gin.Context) {
+		metric := prometheus.NewHTTPMetric(c.Request.URL.Path, c.Request.Method)
+		metric.Started()
+		c.Next()
+		metric.Finished()
+		s.SaveHTTP(metric)
 	})
 }
