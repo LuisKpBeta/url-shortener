@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	HOST          = "localhost"
+	HOST          = "url-shorter-db"
 	DATABASE      = "url"
 	USER          = "postgres"
 	PASSWORD      = "postgres"
